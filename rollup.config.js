@@ -8,6 +8,7 @@ import cleaner from "rollup-plugin-cleaner";
 import svelte from "rollup-plugin-svelte";
 import alias from "@rollup/plugin-alias";
 import css from "rollup-plugin-css-only";
+import tailwind from "./tailwind-rollup";
 import json from "@rollup/plugin-json";
 import serve from "rollup-plugin-serve";
 import path from "path";
@@ -39,5 +40,6 @@ export default {
     watch && livereload(outputPath),
     watch && serve(outputPath),
     !watch && terser(),
+    tailwind(),
   ],
 };
