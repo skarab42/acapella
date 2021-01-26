@@ -1,6 +1,11 @@
+const watch = process.env.ROLLUP_WATCH;
+
 module.exports = {
-  purge: { enabled: true, content: ["./dist/**/*.html", "./src/**/*.svelte"] },
-  darkMode: "media",
+  purge: {
+    enabled: !watch,
+    content: ["./dist/**/*.html", "./src/**/*.svelte"],
+  },
+  darkMode: "class",
   theme: {
     extend: {},
   },
