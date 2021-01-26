@@ -17,7 +17,6 @@ const watch = process.env.ROLLUP_WATCH;
 
 const inputPath = path.join(__dirname, "src");
 const outputPath = path.join(__dirname, "dist");
-const outputStyles = path.join(outputPath, "styles");
 const outputScripts = path.join(outputPath, "scripts");
 
 export default {
@@ -32,10 +31,10 @@ export default {
     alias({
       entries: [{ find: "@", replacement: inputPath }],
     }),
+    css({ output: "dist/styles/index.css" }),
     resolve({ browser: true, dedupe: ["svelte"] }),
     commonjs(),
     svelte({ compilerOptions: { dev: watch } }),
-    css({ output: path.join(outputStyles, "index.css") }),
     cleaner({ targets: [outputScripts] }),
     watch && livereload(outputPath),
     watch && serve(outputPath),
