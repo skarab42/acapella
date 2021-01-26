@@ -1,9 +1,7 @@
 <script>
-    import { name, version } from "../../package";
+  import Header from "./Header.svelte";
 </script>
 
-<svelte:head>
-    <title>{name} v{version}-alpha</title>
-</svelte:head>
-
-<div>{name}</div>
+<div class="h-screen bg-gray-200 dark:bg-gray-900 dark:text-gray-200">
+  <Header />
+</div>
