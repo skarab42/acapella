@@ -2,4 +2,6 @@
   export let icon;
 </script>
 
-<svelte:component this="{icon}" />
+<span {...$$props}>
+  <svelte:component this="{icon}" />
+</span>
