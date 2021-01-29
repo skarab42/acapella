@@ -1,35 +1,86 @@
 <script>
-  import { getAudioDevices, onPermissionChange } from "../libs/audio";
+  import { getAudioDevices, getStream } from "../libs/audio";
+  import MicroPermission from "./MicroPermission.svelte";
+  import DeviceSelect from "./DeviceSelect.svelte";
+  import RecordButton from "./RecordButton.svelte";
 
-  const dismissMessage = "Permission dismissed";
-  const waitingMessage = "Waiting for microphone...";
+  let microState = "idle";
+  let audioDevices = null;
+  let inputStream = null;
+  let recordedTrack = null;
+  let selectedInputDevice = null;
 
-  let input = null;
-  let message = waitingMessage;
+  $: microStateGranted = microState === "granted";
+  $: if (microStateGranted) onMicroStateGranted();
 
-  getAudioDevices()
-    .then((devices) => {
-      console.log({ devices });
-    })
-    .catch((error) => {
-      message = error.message;
+  function onMicroStateGranted() {
+    getAudioDevices().then((devices) => {
+      audioDevices = devices;
+      let id = localStorage.getItem("selectedInputDeviceId");
+      selectedInputDevice = devices.inputs.find(
+        (input) => input.deviceId === id
+      );
+      selectedInputDevice && selectInput(selectedInputDevice);
     });
+  }
 
-  onPermissionChange("microphone", (permission) => {
-    const granted = ["prompt", "granted"].includes(permission.state);
-    message = granted ? waitingMessage : dismissMessage;
-    granted && getAudioDevices();
-  });
+  function selectInput(input) {
+    localStorage.setItem("selectedInputDeviceId", input.deviceId);
+    selectedInputDevice = input;
+    getStream(input.deviceId).then((stream) => {
+      inputStream = stream;
+    });
+  }
 
-  $: console.log("INPUT:", input);
+  function onMicroState({ detail: state }) {
+    microState = state;
+  }
+
+  function onInputSelect({ detail: input }) {
+    selectInput(input);
+  }
+
+  function onRecordStart() {
+    console.log("start");
+  }
+
+  function onRecordStop() {
+    console.log("stop");
+  }
+
+  function onRecordBlob({ detail: blob }) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      console.log({ blob });
+      recordedTrack = e.target.result;
+    };
+    reader.readAsDataURL(blob);
+  }
 </script>
 
-{#if !input}
-  <div class="p-2 bg-red-700 text-gray-300">{message}</div>
-{:else}
-  <div class="p-2">
-    <span class="p-2 bg-green-800 text-gray-300 rounded-full cursor-pointer">
-      Record
-    </span>
-  </div>
+<MicroPermission on:state="{onMicroState}" />
+
+{#if microStateGranted}
+  {#if audioDevices}
+    <DeviceSelect
+      value="{selectedInputDevice}"
+      items="{audioDevices.inputs}"
+      on:select="{onInputSelect}"
+    />
+  {/if}
+
+  {#if inputStream}
+    <div class="p-2">
+      <RecordButton
+        on:start="{onRecordStart}"
+        on:stop="{onRecordStop}"
+        on:blob="{onRecordBlob}"
+        stream="{inputStream}"
+      />
+    </div>
+  {/if}
+
+  <!-- svelte-ignore missing-declaration -->
+  <!-- svelte-ignore a11y-media-has-caption -->
+  <audio controls src="{recordedTrack}"></audio>
 {/if}

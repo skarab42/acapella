@@ -36,6 +36,6 @@
   </Notice>
 {/if}
 
-{#if microState === "granted"}
+<!-- {#if microState === "granted"}
   <Notice type="success" message="Access granted to microphone!" />
-{/if}
+{/if} -->

@@ -2,10 +2,26 @@ function isSupported(api) {
   return navigator.mediaDevices && navigator.mediaDevices[api];
 }
 
-export function onPermissionChange(name, callback) {
-  navigator.permissions.query({ name }).then((permission) => {
-    permission.addEventListener("change", () => callback(permission));
+export function getMicroState() {
+  return navigator.permissions
+    .query({ name: "microphone" })
+    .then((permission) => {
+      return permission.state;
+    });
+}
+
+export function onMicroStateChange(callback) {
+  navigator.permissions.query({ name: "microphone" }).then((permission) => {
+    permission.addEventListener("change", () => callback(permission.state));
   });
+}
+
+export function getUserAudio() {
+  if (!isSupported("getUserMedia")) {
+    throw new Error("Unsupported getUserMedia method");
+  }
+
+  return navigator.mediaDevices.getUserMedia({ audio: true });
 }
 
 export function enumerateDevices() {
@@ -23,17 +39,12 @@ export function enumerateDevices() {
   });
 }
 
-export function getUserAudio() {
-  if (!isSupported("getUserMedia")) {
-    throw new Error("Unsupported getUserMedia method");
-  }
-
-  return navigator.mediaDevices.getUserMedia({ audio: true });
-}
-
 export function getAudioDevices() {
-  return getUserAudio().then(async () => {
-    const devices = await enumerateDevices();
+  return enumerateDevices().then((devices) => {
     return { inputs: devices.audioinput, outputs: devices.audiooutput };
   });
+}
+
+export function getStream(deviceId) {
+  return navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
 }
